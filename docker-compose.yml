@@ -1,0 +1,47 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: codeanywhere-backend
+    ports:
+      - "3001:3001"
+    environment:
+      - PORT=3001
+      - EXECUTION_TIMEOUT_MS=10000
+      - MAX_OUTPUT_BYTES=65536
+      - MAX_CONCURRENT=5
+      - MAX_CODE_BYTES=102400
+      - MEMORY_LIMIT=128m
+      - CPU_LIMIT=0.5
+      - PIDS_LIMIT=64
+      - MAX_OPEN_FILES=512
+      - TMPFS_SIZE_MB=32
+      - CONTAINER_UID=65534
+      - CONTAINER_GID=65534
+      - RATE_LIMIT_EXECUTE=15
+      - RATE_LIMIT_GENERAL=60
+    volumes:
+      # Mount host Docker socket so containerized backend can launch sibling compiler containers
+      - /var/run/docker.sock:/var/run/docker.sock
+      # Mount host temp dir so compilation folders created inside backend are visible to host Docker daemon
+      - /tmp:/tmp
+    restart: unless-stopped
+
+  frontend:
+    image: node:20-slim
+    container_name: codeanywhere-frontend
+    working_dir: /app
+    ports:
+      - "5173:5173"
+    volumes:
+      - .:/app
+    # Install dependencies on startup if node_modules is missing, then run Vite dev server
+    command: sh -c "if [ ! -d node_modules ]; then npm install; fi && npm run dev -- --host"
+    depends_on:
+      - backend
+    environment:
+      - VITE_PORT=5173
+      - VITE_API_URL=http://backend:3001

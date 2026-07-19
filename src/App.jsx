@@ -81,34 +81,103 @@ const SplashButton = ({ children, onClick, className, style }) => {
   );
 };
 
-// --- TEMPLATES ---
-const TEMPLATES = {
+// ─────────────────────────────────────────────────────────────────────────────
+// LANGUAGE_CONFIG — Frontend single source of truth
+//
+// Each entry maps one-to-one with the backend's languages.js by the `id` key.
+// Fields:
+//   id            : must match backend LANGUAGE_CONFIG key exactly
+//   name          : display name shown in the editor header
+//   icon          : emoji shown on landing cards
+//   extension     : file extension (e.g. ".py") — used in file explorer tab
+//   filename      : full filename shown in file explorer (e.g. "main.py")
+//   monacoLanguage: Monaco editor language ID (NOT the same as piston.lang!)
+//   isWeb         : true → iframe preview, never sent to Docker
+//   code          : default starter code shown on first open
+//   piston        : { lang, ver } used by the Piston API fallback
+// ─────────────────────────────────────────────────────────────────────────────
+const LANGUAGE_CONFIG = {
   python: {
-    id: "python", name: "Python", icon: "🐍", 
+    id: "python", name: "Python", icon: "🐍",
+    extension: ".py", filename: "main.py", monacoLanguage: "python",
     piston: { lang: "python", ver: "3.10.0" },
-    code: "def main():\n    print('Hello from Python!')\n    print('CodeAnywhere is online.')\n\nmain()"
+    code: `def main():\n    print('Hello from Python!')\n    for i in range(3):\n        print(f'  Loop {i + 1}')\n\nmain()`,
   },
+
   javascript: {
     id: "javascript", name: "JavaScript", icon: "📜",
+    extension: ".js", filename: "main.js", monacoLanguage: "javascript",
     piston: { lang: "javascript", ver: "18.15.0" },
-    code: "console.log('Hello from JavaScript!');\nconst greet = (name) => {\n  return `Welcome back, ${name}`;\n}\nconsole.log(greet('Developer'));"
+    code: `console.log('Hello from JavaScript!');\n\nconst greet = (name) => {\n  return \`Welcome back, \${name}!\`;\n};\n\nconsole.log(greet('Developer'));`,
   },
+
+  typescript: {
+    id: "typescript", name: "TypeScript", icon: "🔷",
+    extension: ".ts", filename: "main.ts", monacoLanguage: "typescript",
+    piston: { lang: "typescript", ver: "5.0.3" },
+    code: `const greet = (name: string): string => {\n  return \`Hello, \${name}! Welcome to TypeScript.\`;\n};\n\nconst result: string = greet('Developer');\nconsole.log(result);`,
+  },
+
   java: {
     id: "java", name: "Java", icon: "☕",
+    extension: ".java", filename: "Main.java", monacoLanguage: "java",
     piston: { lang: "java", ver: "15.0.2" },
-    code: 'public class Main {\n  public static void main(String[] args) {\n    System.out.println("Hello from Java!");\n  }\n}'
+    code: `public class Main {\n    public static void main(String[] args) {\n        System.out.println("Hello from Java!");\n        for (int i = 1; i <= 3; i++) {\n            System.out.println("  Iteration " + i);\n        }\n    }\n}`,
   },
+
   cpp: {
     id: "cpp", name: "C++", icon: "⚙️",
+    extension: ".cpp", filename: "main.cpp", monacoLanguage: "cpp",
     piston: { lang: "c++", ver: "10.2.0" },
-    code: '#include <iostream>\nint main() {\n  std::cout << "Hello from C++";\n  return 0;\n}'
+    code: `#include <iostream>\n\nint main() {\n    std::cout << "Hello from C++!" << std::endl;\n    for (int i = 1; i <= 3; i++) {\n        std::cout << "  Loop " << i << std::endl;\n    }\n    return 0;\n}`,
   },
+
+  c: {
+    id: "c", name: "C", icon: "⚡",
+    extension: ".c", filename: "main.c", monacoLanguage: "c",
+    piston: { lang: "c", ver: "10.2.0" },
+    code: `#include <stdio.h>\n\nint main() {\n    printf("Hello from C!\\n");\n    for (int i = 1; i <= 3; i++) {\n        printf("  Loop %d\\n", i);\n    }\n    return 0;\n}`,
+  },
+
+  go: {
+    id: "go", name: "Go", icon: "🐹",
+    extension: ".go", filename: "main.go", monacoLanguage: "go",
+    piston: { lang: "go", ver: "1.16.2" },
+    code: `package main\n\nimport "fmt"\n\nfunc main() {\n    fmt.Println("Hello from Go!")\n    for i := 1; i <= 3; i++ {\n        fmt.Printf("  Loop %d\\n", i)\n    }\n}`,
+  },
+
+  rust: {
+    id: "rust", name: "Rust", icon: "🦀",
+    extension: ".rs", filename: "main.rs", monacoLanguage: "rust",
+    piston: { lang: "rust", ver: "1.50.0" },
+    code: `fn main() {\n    println!("Hello from Rust!");\n    for i in 1..=3 {\n        println!("  Loop {}", i);\n    }\n}`,
+  },
+
+  ruby: {
+    id: "ruby", name: "Ruby", icon: "💎",
+    extension: ".rb", filename: "main.rb", monacoLanguage: "ruby",
+    piston: { lang: "ruby", ver: "3.0.1" },
+    code: `def greet(name)\n  "Hello, #{name}! Welcome to Ruby."\nend\n\nputs greet('Developer')\n(1..3).each { |i| puts "  Loop #{i}" }`,
+  },
+
+  php: {
+    id: "php", name: "PHP", icon: "🐘",
+    extension: ".php", filename: "main.php", monacoLanguage: "php",
+    piston: { lang: "php", ver: "8.2.3" },
+    code: `<?php\n\nfunction greet(string $name): string {\n    return "Hello, $name! Welcome to PHP.";\n}\n\necho greet('Developer') . PHP_EOL;\nfor ($i = 1; $i <= 3; $i++) {\n    echo "  Loop $i" . PHP_EOL;\n}`,
+  },
+
   react: {
     id: "react", name: "React / HTML", icon: "⚛️",
+    extension: ".jsx", filename: "App.jsx", monacoLanguage: "javascript",
     isWeb: true,
-    code: `import React, { useState } from 'react';\n\nexport default function App() {\n  const [count, setCount] = useState(0);\n  return (\n    <div style={{ textAlign: 'center', marginTop: '50px', fontFamily: 'sans-serif' }}>\n      <h1 style={{ color: '#3b82f6' }}>Hello React!</h1>\n      <p>Count: <strong>{count}</strong></p>\n      <button onClick={() => setCount(count + 1)}>Increment</button>\n    </div>\n  );\n}`
-  }
+    piston: null,
+    code: `import React, { useState } from 'react';\n\nexport default function App() {\n  const [count, setCount] = useState(0);\n  return (\n    <div style={{ textAlign: 'center', marginTop: '50px', fontFamily: 'sans-serif' }}>\n      <h1 style={{ color: '#3b82f6' }}>Hello React!</h1>\n      <p>Count: <strong>{count}</strong></p>\n      <button onClick={() => setCount(count + 1)}>Increment</button>\n    </div>\n  );\n}`,
+  },
 };
+
+// Keep TEMPLATES as an alias for backward compatibility with any future references
+const TEMPLATES = LANGUAGE_CONFIG;
 
 const MOCK_EXTENSIONS = [
   { id: 1, name: "Prettier", desc: "Code formatter", icon: "🅿️" },
@@ -126,7 +195,11 @@ export default function App() {
   }, [theme]);
 
   const startCoding = (langKey) => {
-    setActiveLang(TEMPLATES[langKey]);
+    const tmpl = LANGUAGE_CONFIG[langKey];
+    // Guard: some language cards on the Languages tab (csharp, swift, etc.)
+    // are display-only and don't have editor configs yet — silently ignore them.
+    if (!tmpl) return;
+    setActiveLang(tmpl);
     setView("editor");
   };
 
@@ -448,20 +521,106 @@ function EditorPage({ langConfig, theme, toggleTheme, goBack }) {
   const [code, setCode] = useState(langConfig.code);
   const [output, setOutput] = useState("Ready to run...");
   const [isRunning, setIsRunning] = useState(false);
-  const [activeSidebar, setActiveSidebar] = useState("explorer"); 
-  
+  const [activeSidebar, setActiveSidebar] = useState("explorer");
+  // Tracks which engine executed the last run: "docker" | "piston" | null
+  const [execEngine, setExecEngine] = useState(null);
+
   const [aiPrompt, setAiPrompt] = useState("");
   const [aiResponse, setAiResponse] = useState("");
   const [isAiLoading, setIsAiLoading] = useState(false);
 
   // --- RUN LOGIC ---
+  // Strategy: try the local Docker backend first (/api/execute).
+  // The backend (ExecutionService) returns a structured result:
+  //   { executionId, language, exitCode, stdout, stderr, timedOut, durationMs, engine }
+  // If the backend is unreachable OR returns { dockerUnavailable: true } (HTTP 503),
+  // we silently fall back to the Piston cloud API — existing behaviour preserved.
   const handleRun = async () => {
+    if (isRunning) return;
+
+    // React / HTML preview — unchanged
     if (langConfig.isWeb) {
       setOutput("preview");
+      setExecEngine(null);
       return;
     }
+
     setIsRunning(true);
     setOutput("Running...");
+    setExecEngine(null);
+
+    // --- Attempt 1: Docker backend ---
+    try {
+      const dockerRes = await fetch("/api/execute", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code, language: langConfig.id, input: "" }),
+        // Abort if backend doesn't respond — keeps fallback fast
+        signal: AbortSignal.timeout(15_000),
+      });
+
+      const data = await dockerRes.json().catch(() => ({}));
+
+      // 503 with dockerUnavailable flag → fall through to Piston
+      if (dockerRes.status === 503 && data.dockerUnavailable) {
+        throw new Error("docker_unavailable");
+      }
+
+      // 400 = validation error (bad language, code too large, etc.)
+      if (dockerRes.status === 400) {
+        setOutput(`Error: ${data.error || "Bad request."}`);
+        setExecEngine(null);
+        setIsRunning(false);
+        return;
+      }
+
+      if (!dockerRes.ok) {
+        setOutput(`Server error: ${data.error || dockerRes.statusText}`);
+        setExecEngine(null);
+        setIsRunning(false);
+        return;
+      }
+
+      // Success — render structured public ExecutionResult
+      let combined = "";
+      if (data.success) {
+        combined = data.output || "(No output)";
+        if (data.executionTime !== undefined) {
+          combined += `\n\n✓ Finished in ${data.executionTime}ms`;
+        }
+      } else {
+        // If compilation/runtime/timeout error
+        combined = data.error || data.output || "Execution failed.";
+        if (data.errorType) {
+          combined += `\n\n[Error type: ${data.errorType}]`;
+        }
+        if (data.executionTime !== undefined) {
+          combined += `\n\n⏱ Total time: ${data.executionTime}ms`;
+        }
+      }
+
+      setOutput(combined);
+      setExecEngine("docker");
+      setIsRunning(false);
+      return; // ✅ Done
+
+    } catch (dockerErr) {
+      // Network error (backend not started), AbortSignal timeout, or docker_unavailable
+      // → fall through silently to Piston
+      const isFallthrough =
+        dockerErr instanceof TypeError ||
+        dockerErr.name === "TimeoutError" ||
+        dockerErr.message === "docker_unavailable";
+
+      if (!isFallthrough) {
+        setOutput(`Error: ${dockerErr.message}`);
+        setExecEngine(null);
+        setIsRunning(false);
+        return;
+      }
+    }
+
+    // --- Attempt 2: Piston API (fallback) ---
     try {
       const response = await fetch("https://emkc.org/api/v2/piston/execute", {
         method: "POST",
@@ -474,8 +633,10 @@ function EditorPage({ langConfig, theme, toggleTheme, goBack }) {
       });
       const data = await response.json();
       setOutput(data.run.output || "No output returned.");
-    } catch (err) {
+      setExecEngine("piston");
+    } catch {
       setOutput("Error: Failed to connect to compiler.");
+      setExecEngine(null);
     } finally {
       setIsRunning(false);
     }
@@ -523,7 +684,7 @@ function EditorPage({ langConfig, theme, toggleTheme, goBack }) {
           {activeSidebar === 'explorer' && (
             <div style={{padding: 10}}>
               <div style={s.fileItem} className="active">
-                <FileCode size={16} color="var(--accent)"/> main.{langConfig.id === 'react' ? 'jsx' : 'txt'}
+                <FileCode size={16} color="var(--accent)"/> {langConfig.filename || `main${langConfig.extension || ''}`}
               </div>
             </div>
           )}
@@ -573,14 +734,27 @@ function EditorPage({ langConfig, theme, toggleTheme, goBack }) {
           <Editor
             height="70%"
             theme={theme === 'dark' ? 'vs-dark' : 'light'}
-            language={langConfig.piston ? langConfig.piston.lang : 'javascript'}
+            language={langConfig.monacoLanguage || 'javascript'}
             value={code}
             onChange={(v) => setCode(v)}
             options={{ fontSize: 14, minimap: { enabled: false }, padding: { top: 20 } }}
           />
           
           <div style={s.outputPanel}>
-            <div style={s.outputHeader}>Output</div>
+            {/* Output header — shows which engine ran the code */}
+            <div style={s.outputHeader}>
+              <span>Output</span>
+              {execEngine === "docker" && (
+                <span style={s.engineBadgeDocker} title="Code executed in an isolated Docker container">
+                  🐳 Docker
+                </span>
+              )}
+              {execEngine === "piston" && (
+                <span style={s.engineBadgePiston} title="Code executed via Piston cloud API (Docker backend not running)">
+                  ☁️ Cloud
+                </span>
+              )}
+            </div>
             {output === "preview" && langConfig.isWeb ? (
               <iframe 
                 srcDoc={`<html><body><script src="https://unpkg.com/react@18/umd/react.development.js"></script><script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script><script src="https://unpkg.com/@babel/standalone/babel.min.js"></script><div id="root"></div><script type="text/babel">${code}; const root = ReactDOM.createRoot(document.getElementById('root')); root.render(<App />);</script></body></html>`}
@@ -619,7 +793,9 @@ const s = {
   header: { height: 50, background: "var(--bg-secondary)", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 20px" },
   runBtn: { background: "var(--accent)", color: "white", border: "none", padding: "8px 20px", borderRadius: 6, cursor: "pointer", display: "flex", gap: 8, alignItems: "center", fontWeight: "600" },
   outputPanel: { flex: 1, borderTop: "1px solid var(--border)", display: "flex", flexDirection: "column", background: "var(--bg-primary)" },
-  outputHeader: { padding: "5px 15px", fontSize: 12, fontWeight: "bold", background: "var(--bg-secondary)", borderBottom: "1px solid var(--border)" },
+  outputHeader: { padding: "5px 15px", fontSize: 12, fontWeight: "bold", background: "var(--bg-secondary)", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", justifyContent: "space-between" },
+  engineBadgeDocker: { fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 999, background: "rgba(56,189,248,0.15)", color: "#0ea5e9", border: "1px solid rgba(56,189,248,0.3)", letterSpacing: "0.2px" },
+  engineBadgePiston: { fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 999, background: "rgba(139,92,246,0.15)", color: "var(--accent-secondary)", border: "1px solid rgba(139,92,246,0.3)", letterSpacing: "0.2px" },
   terminal: { padding: 15, fontFamily: "monospace", color: "var(--text-primary)", overflow: "auto" },
   
   input: { flex: 1, padding: 8, borderRadius: 4, border: "1px solid var(--border)", outline: "none", background: "var(--bg-primary)", color: "var(--text-primary)" },
